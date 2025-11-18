@@ -45,15 +45,15 @@ export default function LoginPage() {
       
       if (result.success) {
         toast.success('Giriş başarılı!');
-        // Ana sayfaya yönlendir, oradan role göre yönlendirilecek
-        router.push('/');
+        // Direkt activities'e git
+        window.location.href = '/activities';
       } else {
         toast.error(result.error || 'Giriş başarısız');
+        setIsLoading(false);
       }
     } catch (error) {
       toast.error('Bir hata oluştu');
       console.error(error);
-    } finally {
       setIsLoading(false);
     }
   }

@@ -50,7 +50,7 @@ export async function login(email: string, password: string) {
       const sessions = await account.listSessions();
       for (const session of sessions.sessions) {
         try {
-          await account.deleteSession(session.$id);
+          await account.deleteSession({ sessionId: session.$id });
         } catch {
           // Session silinemezse devam et
         }
@@ -60,7 +60,7 @@ export async function login(email: string, password: string) {
     }
     
     // Yeni session oluştur
-    const session = await account.createEmailPasswordSession(email, password);
+    const session = await account.createEmailPasswordSession({ email, password });
     return { success: true, data: session };
   } catch (error: any) {
     console.error('Login error:', error);
@@ -78,7 +78,7 @@ export async function register(email: string, password: string, name: string) {
       const sessions = await account.listSessions();
       for (const session of sessions.sessions) {
         try {
-          await account.deleteSession(session.$id);
+          await account.deleteSession({ sessionId: session.$id });
         } catch {
           // Session silinemezse devam et
         }
@@ -88,23 +88,28 @@ export async function register(email: string, password: string, name: string) {
     }
     
     // Kullanıcı oluştur
-    const user = await account.create(ID.unique(), email, password, name);
+    const user = await account.create({ 
+      userId: ID.unique(), 
+      email, 
+      password, 
+      name 
+    });
     
     // Otomatik giriş yap
-    await account.createEmailPasswordSession(email, password);
+    await account.createEmailPasswordSession({ email, password });
     
     // Kullanıcı profili oluştur (varsayılan rol: stajyer)
-    const profile = await databases.createDocument(
-      DATABASE_ID,
-      USERS_COLLECTION_ID,
-      ID.unique(),
-      {
+    const profile = await databases.createDocument({
+      databaseId: DATABASE_ID,
+      collectionId: USERS_COLLECTION_ID,
+      documentId: ID.unique(),
+      data: {
         userId: user.$id,
         name: name,
         email: email,
         role: 'stajyer'
       }
-    );
+    });
     
     return { success: true, data: { user, profile } };
   } catch (error: any) {
@@ -118,7 +123,7 @@ export async function register(email: string, password: string, name: string) {
  */
 export async function logout() {
   try {
-    await account.deleteSession('current');
+    await account.deleteSession({ sessionId: 'current' });
     return { success: true };
   } catch (error: any) {
     console.error('Logout error:', error);
@@ -143,11 +148,11 @@ export async function getCurrentUser() {
  */
 export async function getUserProfile(userId?: string): Promise<UserProfile> {
   try {
-    const response = await databases.listDocuments(
-      DATABASE_ID,
-      USERS_COLLECTION_ID,
-      [Query.equal('userId', userId || '')]
-    );
+    const response = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: USERS_COLLECTION_ID,
+      queries: [Query.equal('userId', userId || '')]
+    });
     
     if (response.documents.length === 0) {
       throw new Error('Profil bulunamadı');
@@ -181,12 +186,12 @@ export async function getUserProfile(userId?: string): Promise<UserProfile> {
  */
 export async function createActivity(activityData: Omit<Activity, '$id' | '$createdAt' | '$updatedAt'>) {
   try {
-    const activity = await databases.createDocument(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      ID.unique(),
-      activityData
-    );
+    const activity = await databases.createDocument({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      documentId: ID.unique(),
+      data: activityData
+    });
     return { success: true, data: activity };
   } catch (error: any) {
     console.error('Create activity error:', error);
@@ -199,15 +204,15 @@ export async function createActivity(activityData: Omit<Activity, '$id' | '$crea
  */
 export async function listAllActivities(limit = 100, offset = 0) {
   try {
-    const activities = await databases.listDocuments(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      [
+    const activities = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      queries: [
         Query.orderDesc('date'),
         Query.limit(limit),
         Query.offset(offset)
       ]
-    );
+    });
     return { success: true, data: activities };
   } catch (error: any) {
     console.error('List all activities error:', error);
@@ -220,15 +225,15 @@ export async function listAllActivities(limit = 100, offset = 0) {
  */
 export async function getActivityByUser(userId: string, limit = 100) {
   try {
-    const activities = await databases.listDocuments(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      [
+    const activities = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      queries: [
         Query.equal('userId', userId),
         Query.orderDesc('date'),
         Query.limit(limit)
       ]
-    );
+    });
     return { success: true, data: activities };
   } catch (error: any) {
     console.error('Get activity by user error:', error);
@@ -241,11 +246,11 @@ export async function getActivityByUser(userId: string, limit = 100) {
  */
 export async function listActivities(queries: string[] = []) {
   try {
-    const activities = await databases.listDocuments(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      [Query.orderDesc('date'), ...queries]
-    );
+    const activities = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      queries: [Query.orderDesc('date'), ...queries]
+    });
     return { success: true, data: activities };
   } catch (error: any) {
     console.error('List activities error:', error);
@@ -258,11 +263,11 @@ export async function listActivities(queries: string[] = []) {
  */
 export async function deleteActivity(activityId: string) {
   try {
-    await databases.deleteDocument(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      activityId
-    );
+    await databases.deleteDocument({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      documentId: activityId
+    });
     return { success: true };
   } catch (error: any) {
     console.error('Delete activity error:', error);
@@ -275,12 +280,12 @@ export async function deleteActivity(activityId: string) {
  */
 export async function updateActivity(activityId: string, data: Partial<Activity>) {
   try {
-    const activity = await databases.updateDocument(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      activityId,
+    const activity = await databases.updateDocument({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      documentId: activityId,
       data
-    );
+    });
     return { success: true, data: activity };
   } catch (error: any) {
     console.error('Update activity error:', error);
@@ -295,11 +300,11 @@ export async function updateActivity(activityId: string, data: Partial<Activity>
  */
 export async function getTotalInterns(): Promise<number> {
   try {
-    const response = await databases.listDocuments(
-      DATABASE_ID,
-      USERS_COLLECTION_ID,
-      [Query.equal('role', 'stajyer')]
-    );
+    const response = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: USERS_COLLECTION_ID,
+      queries: [Query.equal('role', 'stajyer')]
+    });
     return response.total;
   } catch (error: any) {
     console.error('Get total interns error:', error);
@@ -316,11 +321,11 @@ export async function getTodayActiveInterns(): Promise<number> {
     today.setHours(0, 0, 0, 0);
     const todayISO = today.toISOString();
     
-    const activities = await databases.listDocuments(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      [Query.greaterThanEqual('date', todayISO)]
-    );
+    const activities = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      queries: [Query.greaterThanEqual('date', todayISO)]
+    });
     
     // Benzersiz kullanıcı sayısı
     const uniqueUsers = new Set(activities.documents.map((doc: any) => doc.userId));
@@ -336,11 +341,11 @@ export async function getTodayActiveInterns(): Promise<number> {
  */
 export async function getTotalActivities(): Promise<number> {
   try {
-    const response = await databases.listDocuments(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      [Query.limit(1)]
-    );
+    const response = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      queries: [Query.limit(1)]
+    });
     return response.total;
   } catch (error: any) {
     console.error('Get total activities error:', error);
@@ -353,11 +358,11 @@ export async function getTotalActivities(): Promise<number> {
  */
 export async function getMostActiveIntern(): Promise<{ name: string; count: number }> {
   try {
-    const activities = await databases.listDocuments(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      [Query.limit(1000)]
-    );
+    const activities = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      queries: [Query.limit(1000)]
+    });
     
     // Kullanıcı başına aktivite sayısını hesapla
     const activityCount: { [key: string]: { count: number; userName: string } } = {};
@@ -395,11 +400,11 @@ export async function getMostActiveIntern(): Promise<{ name: string; count: numb
  */
 export async function getCategoryDistribution() {
   try {
-    const activities = await databases.listDocuments(
-      DATABASE_ID,
-      ACTIVITIES_COLLECTION_ID,
-      [Query.limit(1000)]
-    );
+    const activities = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: ACTIVITIES_COLLECTION_ID,
+      queries: [Query.limit(1000)]
+    });
     
     const distribution: { [key: string]: number } = {};
     
