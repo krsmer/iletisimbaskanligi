@@ -72,9 +72,11 @@ export default function NewActivityPage() {
       const userResult = await getCurrentUser();
       if (userResult.success && userResult.data) {
         setUserId(userResult.data.$id);
-        const profileResult = await getUserProfile(userResult.data.$id);
-        if (profileResult.success && profileResult.data) {
-          setUserName(profileResult.data.name);
+        try {
+          const profile = await getUserProfile(userResult.data.$id);
+          setUserName(profile.name);
+        } catch (error) {
+          console.error('Profile load error:', error);
         }
       }
     }

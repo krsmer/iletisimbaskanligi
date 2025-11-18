@@ -58,6 +58,13 @@ export async function login(email: string, password: string) {
  */
 export async function register(email: string, password: string, name: string) {
   try {
+    // Önce mevcut oturumu temizle
+    try {
+      await account.deleteSession('current');
+    } catch {
+      // Oturum yoksa hata vermez
+    }
+    
     // Kullanıcı oluştur
     const user = await account.create(ID.unique(), email, password, name);
     
@@ -112,16 +119,16 @@ export async function getCurrentUser() {
 /**
  * Kullanıcı profilini getir
  */
-export async function getUserProfile(userId: string): Promise<{ success: boolean; data?: UserProfile; error?: string }> {
+export async function getUserProfile(userId?: string): Promise<UserProfile> {
   try {
     const response = await databases.listDocuments(
       DATABASE_ID,
       USERS_COLLECTION_ID,
-      [Query.equal('userId', userId)]
+      [Query.equal('userId', userId || '')]
     );
     
     if (response.documents.length === 0) {
-      return { success: false, error: 'Profil bulunamadı' };
+      throw new Error('Profil bulunamadı');
     }
     
     const doc = response.documents[0];
@@ -138,10 +145,10 @@ export async function getUserProfile(userId: string): Promise<{ success: boolean
       $databaseId: doc.$databaseId,
     };
     
-    return { success: true, data: profile };
+    return profile;
   } catch (error: any) {
     console.error('Get user profile error:', error);
-    return { success: false, error: error.message || 'Profil getirilemedi' };
+    throw error;
   }
 }
 
@@ -264,24 +271,24 @@ export async function updateActivity(activityId: string, data: Partial<Activity>
 /**
  * Toplam stajyer sayısını getir
  */
-export async function getTotalInterns() {
+export async function getTotalInterns(): Promise<number> {
   try {
     const response = await databases.listDocuments(
       DATABASE_ID,
       USERS_COLLECTION_ID,
       [Query.equal('role', 'stajyer')]
     );
-    return { success: true, data: response.total };
+    return response.total;
   } catch (error: any) {
     console.error('Get total interns error:', error);
-    return { success: false, error: error.message || 'Stajyer sayısı getirilemedi' };
+    return 0;
   }
 }
 
 /**
  * Bugün aktivite giren stajyer sayısını getir
  */
-export async function getTodayActiveInterns() {
+export async function getTodayActiveInterns(): Promise<number> {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -295,34 +302,34 @@ export async function getTodayActiveInterns() {
     
     // Benzersiz kullanıcı sayısı
     const uniqueUsers = new Set(activities.documents.map((doc: any) => doc.userId));
-    return { success: true, data: uniqueUsers.size };
+    return uniqueUsers.size;
   } catch (error: any) {
     console.error('Get today active interns error:', error);
-    return { success: false, error: error.message || 'Aktif stajyer sayısı getirilemedi' };
+    return 0;
   }
 }
 
 /**
  * Toplam aktivite sayısını getir
  */
-export async function getTotalActivities() {
+export async function getTotalActivities(): Promise<number> {
   try {
     const response = await databases.listDocuments(
       DATABASE_ID,
       ACTIVITIES_COLLECTION_ID,
       [Query.limit(1)]
     );
-    return { success: true, data: response.total };
+    return response.total;
   } catch (error: any) {
     console.error('Get total activities error:', error);
-    return { success: false, error: error.message || 'Aktivite sayısı getirilemedi' };
+    return 0;
   }
 }
 
 /**
  * En aktif stajyeri getir
  */
-export async function getMostActiveIntern() {
+export async function getMostActiveIntern(): Promise<{ name: string; count: number }> {
   try {
     const activities = await databases.listDocuments(
       DATABASE_ID,
@@ -345,19 +352,19 @@ export async function getMostActiveIntern() {
     
     // En yüksek sayıyı bul
     let maxCount = 0;
-    let mostActiveUser = { userId: '', userName: 'Henüz yok', count: 0 };
+    let mostActiveUser = { name: 'Henüz yok', count: 0 };
     
     Object.entries(activityCount).forEach(([userId, data]) => {
       if (data.count > maxCount) {
         maxCount = data.count;
-        mostActiveUser = { userId, userName: data.userName, count: data.count };
+        mostActiveUser = { name: data.userName, count: data.count };
       }
     });
     
-    return { success: true, data: mostActiveUser };
+    return mostActiveUser;
   } catch (error: any) {
     console.error('Get most active intern error:', error);
-    return { success: false, error: error.message || 'En aktif stajyer getirilemedi' };
+    return { name: 'Henüz yok', count: 0 };
   }
 }
 

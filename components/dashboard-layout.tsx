@@ -27,10 +27,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           return;
         }
 
-        const profileResult = await getUserProfile(userResult.data.$id);
-        
-        if (profileResult.success && profileResult.data) {
-          setUserProfile(profileResult.data);
+        try {
+          const profile = await getUserProfile(userResult.data.$id);
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Profile load error:', error);
         }
       } catch (error) {
         console.error('Failed to load user:', error);
