@@ -2,11 +2,12 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { getCurrentUser, getUserProfile } from '@/lib/appwrite';
 import type { UserProfile } from '@/lib/appwrite';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -65,6 +66,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex min-h-screen w-full">
         <AppSidebar userProfile={userProfile} />
         <main className="flex-1 overflow-auto">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 lg:hidden">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="h-6" />
+            <span className="font-heading font-semibold text-sm">Performans Takip</span>
+          </header>
           {children}
         </main>
       </div>
