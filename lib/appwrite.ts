@@ -45,6 +45,21 @@ export interface UserProfile {
  */
 export async function login(email: string, password: string) {
   try {
+    // Önce tüm mevcut session'ları temizle
+    try {
+      const sessions = await account.listSessions();
+      for (const session of sessions.sessions) {
+        try {
+          await account.deleteSession(session.$id);
+        } catch {
+          // Session silinemezse devam et
+        }
+      }
+    } catch {
+      // Session listesi alınamazsa devam et
+    }
+    
+    // Yeni session oluştur
     const session = await account.createEmailPasswordSession(email, password);
     return { success: true, data: session };
   } catch (error: any) {
@@ -58,11 +73,18 @@ export async function login(email: string, password: string) {
  */
 export async function register(email: string, password: string, name: string) {
   try {
-    // Önce mevcut oturumu temizle
+    // Önce tüm mevcut session'ları temizle
     try {
-      await account.deleteSession('current');
+      const sessions = await account.listSessions();
+      for (const session of sessions.sessions) {
+        try {
+          await account.deleteSession(session.$id);
+        } catch {
+          // Session silinemezse devam et
+        }
+      }
     } catch {
-      // Oturum yoksa hata vermez
+      // Session listesi alınamazsa devam et
     }
     
     // Kullanıcı oluştur

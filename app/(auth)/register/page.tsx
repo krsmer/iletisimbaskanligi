@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
+
 const registerSchema = z.object({
   name: z.string().min(2, { message: 'İsim en az 2 karakter olmalıdır' }),
   email: z.string().email({ message: 'Geçerli bir e-posta adresi giriniz' }),
@@ -128,13 +129,13 @@ export default function RegisterPage() {
 
         {/* Content - positioned above patterns */}
         <div className="relative z-10 flex items-center gap-3">
-          <Image
-            src="/logo_iletisim.png"
-            alt="İletişim Başkanlığı Logo"
+          {/* <Image
+            src="logo_iletisim.png"
+            alt="Logo"
             width={20}
             height={20}
             className="object-contain"
-          />
+          /> */}
           
         </div>
         

@@ -11,10 +11,10 @@ export default function HomePage() {
   useEffect(() => {
     const redirect = async () => {
       try {
-        const user = await getCurrentUser();
-        if (user) {
+        const userResult = await getCurrentUser();
+        if (userResult.success && userResult.data) {
           // Kullanıcı giriş yapmış, rolüne göre yönlendir
-          const profile = await getUserProfile();
+          const profile = await getUserProfile(userResult.data.$id);
           if (profile.role === ROLES.YONETICI) {
             router.replace('/dashboard');
           } else {
@@ -25,6 +25,7 @@ export default function HomePage() {
           router.replace('/login');
         }
       } catch (error) {
+        console.error('Redirect error:', error);
         // Hata durumunda login'e yönlendir
         router.replace('/login');
       }

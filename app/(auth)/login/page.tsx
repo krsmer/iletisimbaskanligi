@@ -45,7 +45,8 @@ export default function LoginPage() {
       
       if (result.success) {
         toast.success('Giriş başarılı!');
-        router.push('/activities');
+        // Ana sayfaya yönlendir, oradan role göre yönlendirilecek
+        router.push('/');
       } else {
         toast.error(result.error || 'Giriş başarısız');
       }
@@ -87,13 +88,13 @@ export default function LoginPage() {
 
         {/* Content - positioned above patterns */}
         <div className="relative z-10 flex items-center gap-3">
-          <Image
-            src="/public/logo_iletisim.png"
-            alt="İletişim Başkanlığı Logo"
+          {/* <Image
+            src="/logo_iletisim.png"
+            alt="Logo"
             width={20}
             height={20}
             className="object-contain"
-          />
+          /> */}
         </div>
         
         <div className="relative z-10 text-white space-y-4">
