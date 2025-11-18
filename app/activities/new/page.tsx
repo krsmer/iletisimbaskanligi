@@ -231,7 +231,11 @@ export default function NewActivityPage() {
                   >
                     İptal
                   </Button>
-                  <Button type="submit" disabled={isLoading} className="flex-1">
+                  <Button 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className="flex-1 bg-[#161F9C] hover:bg-[#1a23b0]"
+                  >
                     {isLoading ? 'Kaydediliyor...' : 'Aktivite Ekle'}
                   </Button>
                 </div>

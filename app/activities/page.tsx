@@ -86,7 +86,7 @@ export default function ActivitiesPage() {
               Tüm aktivitelerinizi görüntüleyin ve yönetin
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="bg-[#161F9C] hover:bg-[#1a23b0]">
             <Link href="/activities/new">
               <Plus className="mr-2 h-4 w-4" />
               Yeni Aktivite
@@ -160,7 +160,7 @@ export default function ActivitiesPage() {
                 <p className="text-muted-foreground mb-4">
                   Henüz aktivite eklemediniz
                 </p>
-                <Button asChild>
+                <Button asChild className="bg-[#161F9C] hover:bg-[#1a23b0]">
                   <Link href="/activities/new">
                     <Plus className="mr-2 h-4 w-4" />
                     İlk Aktivitenizi Ekleyin
