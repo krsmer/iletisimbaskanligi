@@ -129,14 +129,19 @@ export default function RegisterPage() {
 
         {/* Content - positioned above patterns */}
         <div className="relative z-10 flex items-center gap-3">
-          {/* <Image
-            src="logo_iletisim.png"
-            alt="Logo"
-            width={20}
-            height={20}
-            className="object-contain"
-          /> */}
-          
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg overflow-hidden bg-white p-2">
+            <Image
+              src="/logo_iletisim.png"
+              alt="İletişim Başkanlığı Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
+          </div>
+          <div>
+            <h2 className="text-xl font-heading font-bold text-white">İletişim Başkanlığı</h2>
+            <p className="text-white/80 text-sm">Performans Takip Sistemi</p>
+          </div>
         </div>
         
         <div className="relative z-10 text-white space-y-4">
