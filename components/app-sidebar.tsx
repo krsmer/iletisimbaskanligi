@@ -46,11 +46,6 @@ export function AppSidebar({ userProfile, ...props }: AppSidebarProps) {
   // Stajyer menü öğeleri
   const stajyerMenuItems = [
     {
-      title: 'Dashboard',
-      icon: LayoutDashboard,
-      url: '/dashboard',
-    },
-    {
       title: 'Aktivitelerim',
       icon: Activity,
       url: '/activities',

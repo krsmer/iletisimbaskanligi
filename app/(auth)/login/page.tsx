@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { login } from '@/lib/appwrite';
+import { login, getCurrentUser, getUserProfile } from '@/lib/appwrite';
 import { Button } from '@/components/ui/button';
 import {
   Field,
@@ -45,8 +45,20 @@ export default function LoginPage() {
       
       if (result.success) {
         toast.success('Giriş başarılı!');
-        // Direkt activities'e git
-        window.location.href = '/activities';
+        
+        // Kullanıcı rolüne göre yönlendir
+        const userResult = await getCurrentUser();
+        if (userResult.success && userResult.data) {
+          const profile = await getUserProfile(userResult.data.$id);
+          
+          if (profile.role === 'yonetici') {
+            window.location.href = '/dashboard';
+          } else {
+            window.location.href = '/activities';
+          }
+        } else {
+          window.location.href = '/activities';
+        }
       } else {
         toast.error(result.error || 'Giriş başarısız');
         setIsLoading(false);

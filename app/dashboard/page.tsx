@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Activity, TrendingUp, Award } from 'lucide-react';
@@ -12,9 +13,13 @@ import {
   getTotalActivities,
   getMostActiveIntern,
   getCategoryDistribution,
+  getCurrentUser,
+  getUserProfile,
 } from '@/lib/appwrite';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalInterns: 0,
@@ -27,6 +32,19 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadStats = async () => {
       try {
+        // Yetki kontrolü
+        const userResult = await getCurrentUser();
+        if (!userResult.success || !userResult.data) {
+          router.push('/login');
+          return;
+        }
+
+        const profile = await getUserProfile(userResult.data.$id);
+        if (profile.role !== 'yonetici') {
+          toast.error('Bu sayfaya erişim yetkiniz yok');
+          router.push('/activities');
+          return;
+        }
         const [totalInterns, todayActive, totalActivities, mostActive, categoryDist] =
           await Promise.all([
             getTotalInterns(),
