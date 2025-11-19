@@ -179,6 +179,23 @@ export async function getUserProfile(userId?: string): Promise<UserProfile> {
   }
 }
 
+/**
+ * Tüm stajyerleri listele
+ */
+export async function listAllInterns() {
+  try {
+    const response = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: USERS_COLLECTION_ID,
+      queries: [Query.equal('role', 'stajyer')]
+    });
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error('List all interns error:', error);
+    return { success: false, error: error.message || 'Stajyerler getirilemedi' };
+  }
+}
+
 // AKTİVİTE FONKSİYONLARI
 
 /**
