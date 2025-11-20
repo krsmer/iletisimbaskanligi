@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Users, Activity, TrendingUp, Award } from 'lucide-react';
+import { Users, Activity as ActivityIcon, TrendingUp, Award } from 'lucide-react';
 import { PieChart } from '@/components/charts/pie-chart';
 import { LineChart } from '@/components/charts/line-chart';
 import {
