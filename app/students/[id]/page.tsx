@@ -47,10 +47,10 @@ export default function StudentDetailPage() {
     if (Number.isNaN(date.getTime())) {
       return '';
     }
-    return date.toLocaleDateString('en-CA');
+    return format(date, 'yyyy-MM-dd');
   };
 
-  const buildFallbackKeys = (length: number) => {
+  const buildTimelineKeys = (length: number) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const keys: string[] = [];
@@ -134,14 +134,7 @@ export default function StudentDetailPage() {
           setCategoryData(pieData);
 
           // Zaman çizelgesi oluştur (son 7 gün)
-          const sortedActivityKeys = activitiesData
-            .map((activity: Activity) => getDateKey(activity.date))
-            .filter(Boolean)
-            .sort();
-
-          const timelineKeys = sortedActivityKeys.length > 0
-            ? sortedActivityKeys.slice(-7)
-            : buildFallbackKeys(7);
+          const timelineKeys = buildTimelineKeys(7);
 
           const timeline: { [key: string]: number } = {};
           timelineKeys.forEach((key) => {
@@ -158,7 +151,7 @@ export default function StudentDetailPage() {
           const chartLabels = timelineKeys.map((dateKey) => {
             const [year, month, day] = dateKey.split('-').map(Number);
             const labelDate = new Date(year, (month || 1) - 1, day || 1);
-            return labelDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+            return format(labelDate, 'd MMM', { locale: tr });
           });
 
           const datasetValues = timelineKeys.map((key) => timeline[key]);

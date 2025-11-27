@@ -1,4 +1,5 @@
 import { Client, Account, Databases, ID, Query, Models } from 'appwrite';
+import { format } from 'date-fns';
 
 // Appwrite yapılandırması
 const client = new Client()
@@ -483,10 +484,10 @@ export async function getActivityTimeline(days: number = 7) {
       if (Number.isNaN(date.getTime())) {
         return '';
       }
-      return date.toLocaleDateString('en-CA');
+      return format(date, 'yyyy-MM-dd');
     };
 
-    const buildFallbackKeys = (count: number) => {
+    const buildTimelineKeys = (count: number) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const keys: string[] = [];
@@ -499,28 +500,21 @@ export async function getActivityTimeline(days: number = 7) {
 
       return keys;
     };
-    
-    const sortedDateKeys = activities.documents
-      .map((doc: any) => formatDateKey(doc.date))
-      .filter(Boolean)
-      .sort();
 
-    const timelineKeys = sortedDateKeys.length > 0
-      ? sortedDateKeys.slice(-days)
-      : buildFallbackKeys(days);
+    const timelineKeys = buildTimelineKeys(days);
     
     const timeline: { [key: string]: number } = {};
     timelineKeys.forEach((key) => {
       timeline[key] = 0;
     });
-    
+
     activities.documents.forEach((doc: any) => {
       const activityDate = formatDateKey(doc.date);
       if (activityDate && timeline.hasOwnProperty(activityDate)) {
         timeline[activityDate]++;
       }
     });
-    
+
     return { success: true, data: timeline, labels: timelineKeys };
   } catch (error: any) {
     console.error('Get activity timeline error:', error);
