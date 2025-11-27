@@ -43,6 +43,7 @@ export default function DashboardPage() {
   });
   const [categoryData, setCategoryData] = useState<any>(null);
   const [timelineData, setTimelineData] = useState<any>(null);
+  const [timelineDays, setTimelineDays] = useState(7);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
@@ -112,16 +113,24 @@ export default function DashboardPage() {
 
         // Line chart için veri hazırla
         const timelineObj = timeline.data || {};
-        const dates = Object.keys(timelineObj);
+        const orderedKeys = (timeline.labels && timeline.labels.length > 0)
+          ? timeline.labels
+          : Object.keys(timelineObj);
+
+        const chartLabels = orderedKeys.map((dateKey) => {
+          const [year, month, day] = dateKey.split('-').map(Number);
+          const labelDate = new Date(year, (month || 1) - 1, day || 1);
+          return labelDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+        });
+
+        const datasetValues = orderedKeys.map((key) => timelineObj[key] ?? 0);
+
         const lineData = {
-          labels: dates.map(date => {
-            const d = new Date(date);
-            return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-          }),
+          labels: chartLabels,
           datasets: [
             {
               label: 'Aktivite Sayısı',
-              data: Object.values(timelineObj),
+              data: datasetValues,
               borderColor: 'rgba(22, 31, 156, 1)',
               backgroundColor: 'rgba(22, 31, 156, 0.1)',
               tension: 0.4,
@@ -130,6 +139,7 @@ export default function DashboardPage() {
           ],
         };
 
+        setTimelineDays(orderedKeys.length || 7);
         setTimelineData(lineData);
 
         // Son aktiviteleri ayarla
@@ -257,7 +267,9 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Aktivite Trendi (Son 7 Gün)</CardTitle>
+              <CardTitle>
+                Aktivite Trendi (Son {timelineDays} Gün)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {timelineData ? (

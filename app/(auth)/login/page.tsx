@@ -190,6 +190,7 @@ export default function LoginPage() {
             <Link
               href="/register"
               className="text-primary hover:underline font-medium"
+              prefetch={true}
             >
               Kayıt Ol
             </Link>

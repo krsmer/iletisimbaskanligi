@@ -8,7 +8,6 @@ const client = new Client()
 export const account = new Account(client);
 export const databases = new Databases(client);
 
-// Database ve Collection ID'leri
 export const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
 export const ACTIVITIES_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_ACTIVITIES_COLLECTION_ID || '';
 export const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || '';
@@ -478,27 +477,51 @@ export async function getActivityTimeline(days: number = 7) {
       collectionId: ACTIVITIES_COLLECTION_ID,
       queries: [Query.limit(1000), Query.orderDesc('date')]
     });
+
+    const formatDateKey = (value: string | Date) => {
+      const date = typeof value === 'string' ? new Date(value) : new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return '';
+      }
+      return date.toLocaleDateString('en-CA');
+    };
+
+    const buildFallbackKeys = (count: number) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const keys: string[] = [];
+
+      for (let i = count - 1; i >= 0; i--) {
+        const cursor = new Date(today);
+        cursor.setDate(cursor.getDate() - i);
+        keys.push(formatDateKey(cursor));
+      }
+
+      return keys;
+    };
     
-    // Son N günü oluştur
+    const sortedDateKeys = activities.documents
+      .map((doc: any) => formatDateKey(doc.date))
+      .filter(Boolean)
+      .sort();
+
+    const timelineKeys = sortedDateKeys.length > 0
+      ? sortedDateKeys.slice(-days)
+      : buildFallbackKeys(days);
+    
     const timeline: { [key: string]: number } = {};
-    const today = new Date();
+    timelineKeys.forEach((key) => {
+      timeline[key] = 0;
+    });
     
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split('T')[0];
-      timeline[dateKey] = 0;
-    }
-    
-    // Aktiviteleri tarihe göre grupla
     activities.documents.forEach((doc: any) => {
-      const activityDate = doc.date.split('T')[0];
-      if (timeline.hasOwnProperty(activityDate)) {
+      const activityDate = formatDateKey(doc.date);
+      if (activityDate && timeline.hasOwnProperty(activityDate)) {
         timeline[activityDate]++;
       }
     });
     
-    return { success: true, data: timeline };
+    return { success: true, data: timeline, labels: timelineKeys };
   } catch (error: any) {
     console.error('Get activity timeline error:', error);
     return { success: false, error: error.message || 'Aktivite zaman çizelgesi getirilemedi' };
