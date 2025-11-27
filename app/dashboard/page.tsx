@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { LineChart } from '@/components/charts/line-chart';
+import { PieChart } from '@/components/charts/pie-chart';
 import { DashboardLayout } from '@/components/dashboard-layout';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -12,24 +13,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Users, Activity as ActivityIcon, TrendingUp, Award } from 'lucide-react';
-import { PieChart } from '@/components/charts/pie-chart';
-import { LineChart } from '@/components/charts/line-chart';
+import type { Activity } from '@/lib/appwrite';
 import {
-  getTotalInterns,
+  getActivityTimeline,
+  getCategoryDistribution,
+  getCurrentUser,
+  getMostActiveIntern,
   getTodayActiveInterns,
   getTotalActivities,
-  getMostActiveIntern,
-  getCategoryDistribution,
-  getActivityTimeline,
-  getCurrentUser,
+  getTotalInterns,
   getUserProfile,
+  getUserProfilesByIds,
   listAllActivities,
 } from '@/lib/appwrite';
-import type { Activity } from '@/lib/appwrite';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Activity as ActivityIcon, Award, TrendingUp, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function DashboardPage() {
@@ -153,7 +154,18 @@ export default function DashboardPage() {
             date: doc.date,
             $createdAt: doc.$createdAt,
           }));
-          setRecentActivities(activitiesData);
+
+          const uniqueUserIds = Array.from(
+            new Set(activitiesData.map((activity) => activity.userId).filter(Boolean))
+          );
+          const profilesMap = await getUserProfilesByIds(uniqueUserIds);
+
+          const enhancedActivities = activitiesData.map((activity) => ({
+            ...activity,
+            userName: profilesMap[activity.userId]?.name || activity.userName,
+          }));
+
+          setRecentActivities(enhancedActivities);
         }
       } catch (error) {
         console.error('Dashboard yükleme hatası:', error);

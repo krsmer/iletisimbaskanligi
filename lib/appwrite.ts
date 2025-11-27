@@ -197,6 +197,45 @@ export async function listAllInterns() {
 }
 
 /**
+ * Belirli kullanıcı ID'lerine göre profilleri getir
+ */
+export async function getUserProfilesByIds(userIds: string[]): Promise<Record<string, UserProfile>> {
+  try {
+    const uniqueIds = Array.from(new Set(userIds)).filter(Boolean);
+    if (uniqueIds.length === 0) {
+      return {};
+    }
+
+    const response = await databases.listDocuments({
+      databaseId: DATABASE_ID,
+      collectionId: USERS_COLLECTION_ID,
+      queries: [Query.equal('userId', uniqueIds)]
+    });
+
+    const profiles: Record<string, UserProfile> = {};
+    response.documents.forEach((doc: any) => {
+      profiles[doc.userId as string] = {
+        $id: doc.$id,
+        userId: doc.userId as string,
+        name: doc.name as string,
+        email: doc.email as string,
+        role: doc.role as 'stajyer' | 'yonetici',
+        $createdAt: doc.$createdAt,
+        $updatedAt: doc.$updatedAt,
+        $permissions: doc.$permissions,
+        $collectionId: doc.$collectionId,
+        $databaseId: doc.$databaseId,
+      };
+    });
+
+    return profiles;
+  } catch (error: any) {
+    console.error('Get user profiles by ids error:', error);
+    return {};
+  }
+}
+
+/**
  * Kullanıcı profilini güncelle
  */
 export async function updateUserProfile(documentId: string, data: { name?: string }) {
@@ -428,14 +467,27 @@ export async function getMostActiveIntern(): Promise<{ name: string; count: numb
     // En yüksek sayıyı bul
     let maxCount = 0;
     let mostActiveUser = { name: 'Henüz yok', count: 0 };
+    let mostActiveUserId: string | null = null;
     
     Object.entries(activityCount).forEach(([userId, data]) => {
       if (data.count > maxCount) {
         maxCount = data.count;
         mostActiveUser = { name: data.userName, count: data.count };
+        mostActiveUserId = userId;
       }
     });
     
+    if (mostActiveUserId) {
+      try {
+        const profiles = await getUserProfilesByIds([mostActiveUserId]);
+        if (profiles[mostActiveUserId]) {
+          mostActiveUser.name = profiles[mostActiveUserId].name;
+        }
+      } catch (profileError) {
+        console.error('Most active intern profile fetch error:', profileError);
+      }
+    }
+
     return mostActiveUser;
   } catch (error: any) {
     console.error('Get most active intern error:', error);

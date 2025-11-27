@@ -1,3 +1,51 @@
+
 {
-    "editor.fontSize": 16
+        "editor.fontSize": 14,
+
+  // =============== Format & Dosya Tutarlılığı ===============
+  "editor.formatOnSave": true, // Kaydedince dosyayı otomatik formatla
+  "files.trimTrailingWhitespace": true, // Satır sonundaki boşlukları kaydederken sil
+  "files.insertFinalNewline": true, // Dosya sonunda her zaman boş satır bırak (POSIX uyumlu)
+
+  // =============== Prettier Kuralları ===============
+  "prettier.singleQuote": true, // JS/TS stringlerde tek tırnak kullan → const a = 'text'
+  "prettier.jsxSingleQuote": false, // JSX attribute’larda çift tırnak kullan → <div className="box">
+  "prettier.trailingComma": "all", // Objelerde/arraylerde son elemana da virgül ekle
+  "prettier.arrowParens": "avoid", // Tek parametreli arrow func’larda parantez olmasın → x => x + 1
+  "prettier.printWidth": 120, // Maksimum satır uzunluğu 120 karakter → kod çok kırılmaz
+
+  // =============== Import (TS & JS) ===============
+  "typescript.preferences.importModuleSpecifier": "non-relative", // TS importlarda alias kullan → import x from '@/utils/x'
+  "javascript.preferences.importModuleSpecifier": "non-relative", // JS importlarda alias kullan
+  "typescript.updateImportsOnFileMove.enabled": "always", // TS dosya taşındığında import yollarını otomatik güncelle
+  "javascript.updateImportsOnFileMove.enabled": "always", // JS dosya taşındığında import yollarını otomatik güncelle
+
+  // =============== Görsellik & Okunabilirlik ===============
+  "editor.fontFamily": "'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace", // Kod fontu (ligature destekli)
+  "editor.bracketPairColorization.enabled": true, // Parantez çiftlerini farklı renkle göster
+  "editor.guides.bracketPairs": "active", // Açılış/kapanış bracket çiftlerini çizgiyle bağla
+  "editor.guides.indentation": true, // Indent çizgilerini göster
+  "editor.occurrencesHighlight": "singleFile", // Seçilen kelimenin tüm geçtiği yerleri vurgula
+  "editor.cursorSmoothCaretAnimation": "on", // İmleç satır değiştirmede kayarak geçsin (smooth animation)
+  "editor.semanticHighlighting.enabled": true, // TS tiplerine göre renkli highlighting yap
+  "editor.stickyScroll.enabled": true, // Fonksiyon/class isimleri üstte sabit kalsın → context kaybolmaz
+  "editor.rulers": [
+    {
+      "column": 120, // Satır uzunluğu sınırı
+      "color": "#5c6370" // Düz çizgi (noktasız)
+    }
+  ],
+
+  // =============== Git & Diff ===============
+  "diffEditor.ignoreTrimWhitespace": true, // Diff’te sadece boşluk farklarını yok say (gereksiz farkları gizler)
+
+  // =============== Kaydederken Kod Düzenleme ===============
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // =============== Explorer & Sekmeler ===============
+  "explorer.compactFolders": false, // Explorer’da klasörleri tek satırda sıkıştırma → tam göster
+  "workbench.editor.enablePreview": false // Dosyalar her zaman yeni sekmede açılır (önceki sekme üzerine yazılmaz)
 }
