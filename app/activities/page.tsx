@@ -73,7 +73,7 @@ export default function ActivitiesPage() {
 
         const participantIds = new Set<string>();
         activitiesData.forEach((activity) => {
-          (activity.participantIds || [activity.userId]).forEach((id) => participantIds.add(id));
+          (activity.participantIds || [activity.userId]).forEach((id: string) => participantIds.add(id));
         });
         if (participantIds.size > 0) {
           const profiles = await getUserProfilesByIds(Array.from(participantIds));

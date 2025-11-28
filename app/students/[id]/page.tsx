@@ -169,7 +169,7 @@ export default function StudentDetailPage() {
 
           const uniqueParticipantIds = new Set<string>();
           activitiesData.forEach((activity) => {
-            (activity.participantIds || [activity.userId]).forEach((id) => uniqueParticipantIds.add(id));
+            (activity.participantIds || [activity.userId]).forEach((id: string) => uniqueParticipantIds.add(id));
           });
 
           if (uniqueParticipantIds.size > 0) {
