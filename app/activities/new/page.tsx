@@ -37,10 +37,10 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const activitySchema = z.object({
-  category: z.string().min(1, { message: 'Kategori seçiniz' }),
-  description: z.string().min(10, { message: 'Açıklama en az 10 karakter olmalıdır' }),
+  category: z.string(),
+  description: z.string(),
   date: z.date(),
-  participants: z.array(z.string()).default([]),
+  participants: z.array(z.string()).optional(),
 });
 
 type ActivityFormValues = z.infer<typeof activitySchema>;

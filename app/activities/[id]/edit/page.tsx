@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
+import {
   getCurrentUser,
   getActivityByUser,
   updateActivity,
@@ -101,7 +101,17 @@ export default function EditActivityPage() {
                   $updatedAt: internDoc.$updatedAt,
                 };
               })
-              .filter((intern): intern is UserProfile => Boolean(intern));
+              .filter(
+                (intern): intern is {
+                  $id: string;
+                  userId: string;
+                  name: string;
+                  email: string;
+                  role: 'stajyer' | 'yonetici';
+                  $createdAt: string;
+                  $updatedAt: string;
+                } => Boolean(intern)
+              );
             setInterns(internProfiles);
           }
         } catch (error) {

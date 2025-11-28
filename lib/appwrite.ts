@@ -21,7 +21,7 @@ export interface Activity {
   category: string;
   description: string;
   date: string;
-  participantIds: string[];
+  participantIds?: string[];
   participantNames?: string[];
   managerComment?: string;
   $createdAt?: string;
