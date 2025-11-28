@@ -268,11 +268,6 @@ export default function ActivitiesPage() {
                             Ekleyen: {participantMap[activity.userId] || activity.userName || 'Bilinmeyen'}
                           </p>
                         )}
-                        {activity.managerComment && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Yönetici Yorumu: {activity.managerComment}
-                          </p>
-                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         {activity.userId === userId ? (

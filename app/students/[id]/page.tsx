@@ -444,14 +444,13 @@ export default function StudentDetailPage() {
                   <TableHead>Tarih</TableHead>
                   <TableHead>Kategori</TableHead>
                   <TableHead>Açıklama</TableHead>
-                  <TableHead>Yönetici Yorumu</TableHead>
                   <TableHead className="text-right">İşlemler</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {activities.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-500">
+                    <TableCell colSpan={4} className="text-center text-gray-500">
                       Henüz aktivite bulunmuyor
                     </TableCell>
                   </TableRow>
@@ -472,13 +471,6 @@ export default function StudentDetailPage() {
                             ? getParticipantNames(activity).join(', ')
                             : 'Bilinmiyor'}
                         </p>
-                      </TableCell>
-                      <TableCell className="max-w-xs text-sm text-gray-600">
-                        {activity.managerComment ? (
-                          <span>{activity.managerComment}</span>
-                        ) : (
-                          <span className="text-gray-400">Henüz yorum yok</span>
-                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

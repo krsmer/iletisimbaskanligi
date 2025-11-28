@@ -12,6 +12,7 @@ import {
   LogOut,
   User,
   Settings,
+  Bell,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -44,6 +45,11 @@ const STAJYER_MENU_ITEMS = [
     url: '/activities',
   },
   {
+    title: 'Bildirimler',
+    icon: Bell,
+    url: '/notifications',
+  },
+  {
     title: 'Ayarlar',
     icon: Settings,
     url: '/settings',
@@ -60,6 +66,11 @@ const YONETICI_MENU_ITEMS = [
     title: 'Tüm Stajyerler',
     icon: Users,
     url: '/students',
+  },
+  {
+    title: 'Bildirimler',
+    icon: Bell,
+    url: '/notifications',
   },
   {
     title: 'Ayarlar',
