@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { getCurrentUser, getActivityByUser, deleteActivity } from '@/lib/appwrite';
+import { getCurrentUser, getActivityByUser, deleteActivity, getUserProfilesByIds } from '@/lib/appwrite';
 import type { Activity } from '@/lib/appwrite';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -41,6 +41,7 @@ export default function ActivitiesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [activityToDelete, setActivityToDelete] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [participantMap, setParticipantMap] = React.useState<Record<string, string>>({});
 
   const loadActivities = React.useCallback(async () => {
     try {
@@ -66,8 +67,22 @@ export default function ActivitiesPage() {
           $createdAt: doc.$createdAt,
           $updatedAt: doc.$updatedAt,
           managerComment: doc.managerComment,
+          participantIds: Array.isArray(doc.participantIds) && doc.participantIds.length > 0 ? doc.participantIds : [doc.userId],
         }));
         setActivities(activitiesData);
+
+        const participantIds = new Set<string>();
+        activitiesData.forEach((activity) => {
+          (activity.participantIds || [activity.userId]).forEach((id) => participantIds.add(id));
+        });
+        if (participantIds.size > 0) {
+          const profiles = await getUserProfilesByIds(Array.from(participantIds));
+          const map: Record<string, string> = {};
+          Object.values(profiles).forEach((profile) => {
+            map[profile.userId] = profile.name;
+          });
+          setParticipantMap(map);
+        }
       }
     } catch (error) {
       console.error('Failed to load activities:', error);
@@ -117,6 +132,15 @@ export default function ActivitiesPage() {
       'Eğitim': 'bg-red-500',
     };
     return colors[category] || 'bg-gray-500';
+  };
+
+  const getParticipantNames = (activity: Activity) => {
+    const ids = activity.participantIds && activity.participantIds.length > 0
+      ? activity.participantIds
+      : [activity.userId];
+    return ids
+      .map((id) => participantMap[id])
+      .filter((name): name is string => Boolean(name));
   };
 
   return (
@@ -233,30 +257,45 @@ export default function ActivitiesPage() {
                       </TableCell>
                       <TableCell className="max-w-md">
                         <p className="truncate">{activity.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Stajyerler:{' '}
+                          {getParticipantNames(activity).length > 0
+                            ? getParticipantNames(activity).join(', ')
+                            : 'Bilinmiyor'}
+                        </p>
+                        {activity.userId !== userId && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Ekleyen: {participantMap[activity.userId] || activity.userName || 'Bilinmeyen'}
+                          </p>
+                        )}
                         {activity.managerComment && (
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-xs text-gray-500 mt-1">
                             Yönetici Yorumu: {activity.managerComment}
                           </p>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Link href={`/activities/${activity.$id}/edit`}>
-                            <Button variant="outline" size="sm" className="gap-2">
-                              <Edit className="h-4 w-4" />
-                              Düzenle
+                        {activity.userId === userId ? (
+                          <div className="flex justify-end gap-2">
+                            <Link href={`/activities/${activity.$id}/edit`}>
+                              <Button variant="outline" size="sm" className="gap-2">
+                                <Edit className="h-4 w-4" />
+                                Düzenle
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleDeleteClick(activity.$id!)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Sil
                             </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleDeleteClick(activity.$id!)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Sil
-                          </Button>
-                        </div>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Ortak aktivite</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

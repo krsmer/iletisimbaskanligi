@@ -21,6 +21,8 @@ export interface Activity {
   category: string;
   description: string;
   date: string;
+  participantIds: string[];
+  participantNames?: string[];
   managerComment?: string;
   $createdAt?: string;
   $updatedAt?: string;
@@ -313,16 +315,48 @@ export async function listAllActivities(limit = 100, offset = 0) {
  */
 export async function getActivityByUser(userId: string, limit = 100) {
   try {
-    const activities = await databases.listDocuments({
-      databaseId: DATABASE_ID,
-      collectionId: ACTIVITIES_COLLECTION_ID,
-      queries: [
-        Query.equal('userId', userId),
-        Query.orderDesc('date'),
-        Query.limit(limit)
-      ]
+    const [ownerActivities, participantActivities] = await Promise.all([
+      databases.listDocuments({
+        databaseId: DATABASE_ID,
+        collectionId: ACTIVITIES_COLLECTION_ID,
+        queries: [
+          Query.equal('userId', userId),
+          Query.orderDesc('date'),
+          Query.limit(limit)
+        ]
+      }),
+      databases.listDocuments({
+        databaseId: DATABASE_ID,
+        collectionId: ACTIVITIES_COLLECTION_ID,
+        queries: [
+          Query.contains('participantIds', userId),
+          Query.orderDesc('date'),
+          Query.limit(limit)
+        ]
+      })
+    ]);
+
+    const documentsMap = new Map<string, Models.Document>();
+    [...ownerActivities.documents, ...participantActivities.documents].forEach((doc) => {
+      documentsMap.set(doc.$id, doc);
     });
-    return { success: true, data: activities };
+
+    const mergedDocuments = Array.from(documentsMap.values()).sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
+
+    const documents = mergedDocuments.slice(0, limit);
+
+    return {
+      success: true,
+      data: {
+        ...ownerActivities,
+        documents,
+        total: mergedDocuments.length,
+      },
+    };
   } catch (error: any) {
     console.error('Get activity by user error:', error);
     return { success: false, error: error.message || 'Aktiviteler getirilemedi' };

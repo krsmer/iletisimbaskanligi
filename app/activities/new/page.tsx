@@ -28,7 +28,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { createActivity, getCurrentUser, getUserProfile } from '@/lib/appwrite';
+import { createActivity, getCurrentUser, getUserProfile, listAllInterns } from '@/lib/appwrite';
+import type { UserProfile } from '@/lib/appwrite';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -39,6 +40,7 @@ const activitySchema = z.object({
   category: z.string().min(1, { message: 'Kategori seçiniz' }),
   description: z.string().min(10, { message: 'Açıklama en az 10 karakter olmalıdır' }),
   date: z.date(),
+  participants: z.array(z.string()).default([]),
 });
 
 type ActivityFormValues = z.infer<typeof activitySchema>;
@@ -57,6 +59,8 @@ export default function NewActivityPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [userId, setUserId] = React.useState<string>('');
   const [userName, setUserName] = React.useState<string>('');
+  const [interns, setInterns] = React.useState<UserProfile[]>([]);
+  const [isLoadingInterns, setIsLoadingInterns] = React.useState(true);
 
   const form = useForm<ActivityFormValues>({
     resolver: zodResolver(activitySchema),
@@ -64,6 +68,7 @@ export default function NewActivityPage() {
       category: '',
       description: '',
       date: new Date(),
+      participants: [],
     },
   });
 
@@ -78,6 +83,28 @@ export default function NewActivityPage() {
         } catch (error) {
           console.error('Profile load error:', error);
         }
+
+        try {
+          const internsResult = await listAllInterns();
+          if (internsResult.success && internsResult.data) {
+            const internProfiles = internsResult.data.documents.map((doc: any) => ({
+              $id: doc.$id,
+              userId: doc.userId as string,
+              name: doc.name as string,
+              email: doc.email as string,
+              role: doc.role as 'stajyer' | 'yonetici',
+              $createdAt: doc.$createdAt,
+              $updatedAt: doc.$updatedAt,
+            }));
+            setInterns(internProfiles);
+          }
+        } catch (error) {
+          console.error('Intern list load error:', error);
+        } finally {
+          setIsLoadingInterns(false);
+        }
+      } else {
+        setIsLoadingInterns(false);
       }
     }
     loadUser();
@@ -86,12 +113,23 @@ export default function NewActivityPage() {
   async function onSubmit(data: ActivityFormValues) {
     setIsLoading(true);
     try {
+      const participantIds = Array.from(new Set([userId, ...(data.participants || [])]));
+      const participantNames = participantIds
+        .map((id) => {
+          if (id === userId) return userName;
+          const intern = interns.find((i) => i.userId === id);
+          return intern?.name;
+        })
+        .filter((name): name is string => Boolean(name));
+
       const result = await createActivity({
         userId,
         userName,
         category: data.category,
         description: data.description,
         date: data.date.toISOString(),
+        participantIds,
+        participantNames,
       });
 
       if (result.success) {
@@ -169,6 +207,74 @@ export default function NewActivityPage() {
                       </FormControl>
                       <FormDescription>
                         Yaptığınız işi detaylı bir şekilde açıklayın
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="participants"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Stajyerler</FormLabel>
+                      <FormControl>
+                        <div className="space-y-3 rounded-md border p-3">
+                          {isLoadingInterns ? (
+                            <p className="text-sm text-muted-foreground">Stajyerler yükleniyor...</p>
+                          ) : (
+                            <>
+                              <p className="text-sm text-muted-foreground">
+                                Seni otomatik olarak aktiviteye ekliyoruz. Birlikte çalışacağın stajyerleri seçebilirsin.
+                              </p>
+                              <div className="max-h-48 overflow-y-auto space-y-2">
+                                {interns
+                                  .filter((intern) => intern.userId !== userId)
+                                  .map((intern) => {
+                                    const selected = field.value?.includes(intern.userId);
+                                    return (
+                                      <label
+                                        key={intern.userId}
+                                        className="flex items-center gap-3 text-sm"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          className="h-4 w-4 rounded border-gray-300"
+                                          checked={selected}
+                                          onChange={() => {
+                                            const currentValue = field.value || [];
+                                            if (selected) {
+                                              field.onChange(currentValue.filter((id) => id !== intern.userId));
+                                            } else {
+                                              field.onChange([...currentValue, intern.userId]);
+                                            }
+                                          }}
+                                          disabled={isLoading}
+                                        />
+                                        <span>{intern.name}</span>
+                                      </label>
+                                    );
+                                  })}
+                              </div>
+                              {field.value && field.value.length > 0 && (
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                  {field.value.map((id) => {
+                                    const intern = interns.find((i) => i.userId === id);
+                                    return (
+                                      <span key={id} className="rounded-full bg-gray-100 px-3 py-1">
+                                        {intern?.name || 'Bilinmeyen'}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Ortak faaliyetleri diğer stajyerlerle paylaşmak için seçim yapın
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

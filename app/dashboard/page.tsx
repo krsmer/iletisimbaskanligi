@@ -154,6 +154,7 @@ export default function DashboardPage() {
             date: doc.date,
             $createdAt: doc.$createdAt,
             managerComment: doc.managerComment,
+            participantIds: Array.isArray(doc.participantIds) && doc.participantIds.length > 0 ? doc.participantIds : [doc.userId],
           }));
 
           const uniqueUserIds = Array.from(

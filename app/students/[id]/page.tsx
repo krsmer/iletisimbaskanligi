@@ -31,6 +31,7 @@ import {
   getUserProfile,
   getActivityByUser,
   updateActivity,
+  getUserProfilesByIds,
 } from '@/lib/appwrite';
 import type { Activity, UserProfile } from '@/lib/appwrite';
 import { toast } from 'sonner';
@@ -54,6 +55,7 @@ export default function StudentDetailPage() {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [commentText, setCommentText] = useState('');
   const [isSavingComment, setIsSavingComment] = useState(false);
+  const [participantMap, setParticipantMap] = useState<Record<string, string>>({});
 
   const getDateKey = (value: string | Date) => {
     const date = typeof value === 'string' ? new Date(value) : new Date(value);
@@ -75,6 +77,15 @@ export default function StudentDetailPage() {
     }
 
     return keys;
+  };
+
+  const getParticipantNames = (activity: Activity) => {
+    const ids = activity.participantIds && activity.participantIds.length > 0
+      ? activity.participantIds
+      : [activity.userId];
+    return ids
+      .map((id) => participantMap[id])
+      .filter((name): name is string => Boolean(name));
   };
 
   const handleOpenComment = (activity: Activity) => {
@@ -152,8 +163,23 @@ export default function StudentDetailPage() {
             date: doc.date,
             $createdAt: doc.$createdAt,
             managerComment: doc.managerComment,
+            participantIds: Array.isArray(doc.participantIds) && doc.participantIds.length > 0 ? doc.participantIds : [doc.userId],
           }));
           setActivities(activitiesData);
+
+          const uniqueParticipantIds = new Set<string>();
+          activitiesData.forEach((activity) => {
+            (activity.participantIds || [activity.userId]).forEach((id) => uniqueParticipantIds.add(id));
+          });
+
+          if (uniqueParticipantIds.size > 0) {
+            const profiles = await getUserProfilesByIds(Array.from(uniqueParticipantIds));
+            const map: Record<string, string> = {};
+            Object.values(profiles).forEach((profile) => {
+              map[profile.userId] = profile.name;
+            });
+            setParticipantMap(map);
+          }
 
           // Kategori dağılımı hesapla
           const categoryCount: { [key: string]: number } = {};
@@ -439,7 +465,13 @@ export default function StudentDetailPage() {
                         <Badge variant="secondary">{activity.category}</Badge>
                       </TableCell>
                       <TableCell className="max-w-md">
-                        {activity.description}
+                        <p>{activity.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Stajyerler:{' '}
+                          {getParticipantNames(activity).length > 0
+                            ? getParticipantNames(activity).join(', ')
+                            : 'Bilinmiyor'}
+                        </p>
                       </TableCell>
                       <TableCell className="max-w-xs text-sm text-gray-600">
                         {activity.managerComment ? (
