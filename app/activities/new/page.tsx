@@ -161,7 +161,7 @@ export default function NewActivityPage() {
                       <FormLabel>Açıklama</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Bugün neler yaptınız? Detaylı açıklama..."
+                          placeholder="Yaptığınız veya yapacağınız çalışmayı detaylı bir şekilde açıklayın..."
                           className="min-h-[120px]"
                           disabled={isLoading}
                           {...field}
@@ -207,7 +207,7 @@ export default function NewActivityPage() {
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) =>
-                              date > new Date() || date < new Date('2024-01-01')
+                              date < new Date('2024-01-01')
                             }
                             initialFocus
                           />
@@ -231,9 +231,9 @@ export default function NewActivityPage() {
                   >
                     İptal
                   </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading} 
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
                     className="flex-1 bg-[#161F9C] hover:bg-[#1a23b0]"
                   >
                     {isLoading ? 'Kaydediliyor...' : 'Aktivite Ekle'}
