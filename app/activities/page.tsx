@@ -1,36 +1,36 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { getCurrentUser, getActivityByUser, deleteActivity, getUserProfilesByIds } from '@/lib/appwrite';
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import type { Activity } from '@/lib/appwrite';
+import { deleteActivity, getActivityByUser, getCurrentUser, getUserProfilesByIds } from '@/lib/appwrite';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { Plus, Calendar, Tag, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Edit, Plus, Tag, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { toast } from 'sonner';
 
 export default function ActivitiesPage() {
@@ -46,16 +46,16 @@ export default function ActivitiesPage() {
   const loadActivities = React.useCallback(async () => {
     try {
       const userResult = await getCurrentUser();
-      
+
       if (!userResult.success || !userResult.data) {
         router.push('/login');
         return;
       }
 
       setUserId(userResult.data.$id);
-      
+
       const activitiesResult = await getActivityByUser(userResult.data.$id);
-      
+
       if (activitiesResult.success && activitiesResult.data) {
         const activitiesData = activitiesResult.data.documents.map((doc: any) => ({
           $id: doc.$id,
@@ -106,7 +106,7 @@ export default function ActivitiesPage() {
     setIsDeleting(true);
     try {
       const result = await deleteActivity(activityToDelete);
-      
+
       if (result.success) {
         toast.success('Aktivite silindi');
         await loadActivities();

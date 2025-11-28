@@ -1,44 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { LineChart } from '@/components/charts/line-chart';
+import { PieChart } from '@/components/charts/pie-chart';
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { PieChart } from '@/components/charts/pie-chart';
-import { LineChart } from '@/components/charts/line-chart';
-import { 
-  getCurrentUser, 
-  getUserProfile,
-  getActivityByUser,
-  updateActivity,
-  getUserProfilesByIds,
-} from '@/lib/appwrite';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import type { Activity, UserProfile } from '@/lib/appwrite';
-import { toast } from 'sonner';
-import { ArrowLeft, Mail, Calendar, Activity as ActivityIcon, TrendingUp } from 'lucide-react';
+import {
+    getActivityByUser,
+    getCurrentUser,
+    getUserProfile,
+    getUserProfilesByIds,
+    updateActivity,
+} from '@/lib/appwrite';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Activity as ActivityIcon, ArrowLeft, Calendar, Mail, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function StudentDetailPage() {
   const router = useRouter();
