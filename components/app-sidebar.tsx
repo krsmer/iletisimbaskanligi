@@ -136,8 +136,8 @@ export function AppSidebar({ userProfile, ...props }: AppSidebarProps) {
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden bg-white">
-            <Image 
-              src="/logo_iletisim.png" 
+            <Image
+              src="/logo_iletisim.png"
               alt="İletişim Başkanlığı Logo"
               width={40}
               height={40}
@@ -171,7 +171,7 @@ export function AppSidebar({ userProfile, ...props }: AppSidebarProps) {
                   >
                     <Link href={item.url} prefetch={true}>
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span>{item.title} "test için kaldırılacak"</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -213,7 +213,7 @@ export function AppSidebar({ userProfile, ...props }: AppSidebarProps) {
           </div>
         )}
       </SidebarFooter>
-      
+
       <SidebarRail />
     </Sidebar>
   );
