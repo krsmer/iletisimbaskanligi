@@ -47,5 +47,7 @@
 
   // =============== Explorer & Sekmeler ===============
   "explorer.compactFolders": false, // Explorer’da klasörleri tek satırda sıkıştırma → tam göster
-  "workbench.editor.enablePreview": false // Dosyalar her zaman yeni sekmede açılır (önceki sekme üzerine yazılmaz)
+  "workbench.editor.enablePreview": false,
+  "snyk.advanced.organization": "418897ae-f4b2-4b99-8b38-6fa7bd6230b8",
+  "snyk.advanced.autoSelectOrganization": true // Dosyalar her zaman yeni sekmede açılır (önceki sekme üzerine yazılmaz)
 }
