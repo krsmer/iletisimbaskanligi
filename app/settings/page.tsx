@@ -64,8 +64,8 @@ export default function SettingsPage() {
     
     if (!userProfile) return;
 
-    if (!name || name.length < 2) {
-      toast.error('İsim en az 2 karakter olmalıdır');
+    if (!name || name.length < 3) {
+      toast.error('İsim en az 3 karakter olmalıdır');
       return;
     }
 
